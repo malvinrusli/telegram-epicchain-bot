@@ -1,7 +1,8 @@
 import os
 import logging
 import asyncio
-from telegram import Update, ChatAction
+from telegram import Update
+from telegram.constants import ChatAction
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from dotenv import load_dotenv
 
@@ -29,7 +30,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Main message handler for group chats."""
     # Only process if it's a text message
-    if not update.message.text:
+    if not update.message or not update.message.text:
         return
 
     message_text = update.message.text
