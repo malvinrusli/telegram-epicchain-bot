@@ -1,0 +1,25 @@
+name: telegram-epicchain-bot
+region: blr
+
+workers:
+  - name: bot
+    github:
+      repo: malvinrusli/telegram-epicchain-bot
+      branch: main
+      deploy_on_push: true
+    dockerfile_path: Dockerfile
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    envs:
+      - key: TELEGRAM_BOT_TOKEN
+        scope: RUN_TIME
+        type: SECRET
+      - key: GEMINI_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: QDRANT_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: QDRANT_API_KEY
+        scope: RUN_TIME
+        type: SECRET
