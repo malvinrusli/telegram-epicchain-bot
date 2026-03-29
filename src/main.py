@@ -52,15 +52,21 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     # Clean the message text from the mention for cleaner KB search
     clean_text = message_text.replace(f"@{bot_user.username}", "").strip()
 
-    # Show typing indicator while processing
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+    # Keep sending typing indicator every 4s (Telegram expires it after 5s)
+    async def typing_loop():
+        while True:
+            await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+            await asyncio.sleep(4)
 
-    # 1. Search Knowledge Base for context
-    kb_context = search_kb(clean_text)
+    typing_task = asyncio.create_task(typing_loop())
 
-    # 2. Process with Agent
-    response_text = agent.process_message(username, clean_text, kb_context)
-    
+    try:
+        # Run blocking calls in a thread so the event loop stays free for typing loop
+        kb_context = await asyncio.to_thread(search_kb, clean_text)
+        response_text = await asyncio.to_thread(agent.process_message, username, clean_text, kb_context)
+    finally:
+        typing_task.cancel()
+
     if response_text:
         # Tagging is already handled in agent.py
         await update.message.reply_text(response_text)
