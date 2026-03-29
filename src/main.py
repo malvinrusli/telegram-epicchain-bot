@@ -1,7 +1,7 @@
 import os
 import logging
 import asyncio
-from telegram import Update
+from telegram import Update, ChatAction
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from dotenv import load_dotenv
 
@@ -51,9 +51,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     # Clean the message text from the mention for cleaner KB search
     clean_text = message_text.replace(f"@{bot_user.username}", "").strip()
 
+    # Show typing indicator while processing
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+
     # 1. Search Knowledge Base for context
     kb_context = search_kb(clean_text)
-    
+
     # 2. Process with Agent
     response_text = agent.process_message(username, clean_text, kb_context)
     
